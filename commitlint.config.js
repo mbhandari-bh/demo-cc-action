@@ -22,7 +22,7 @@ module.exports = {
     ],
 
     // ✅ enforce case style (lowercase or sentence-case)
-    'subject-case': [2, 'always', ['lower-case', 'sentence-case']],
+    'subject-case': [2, 'always', ['lower-case', 'sentence-case', 'start-case']],
 
     // ✅ ensure subject is not empty
     'subject-empty': [2, 'never'],
