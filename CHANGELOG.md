@@ -1,3 +1,15 @@
+## [1.1.1](https://github.com/mbhandari-bh/demo-cc-action/compare/v1.1.0...v1.1.1) (2025-08-25)
+
+
+### Bug Fixes
+
+* **auth:** correct token expiration logic ([f90a2f9](https://github.com/mbhandari-bh/demo-cc-action/commit/f90a2f942043f17bb69005270ef36ae94d12eed8))
+
+
+### Performance Improvements
+
+* **database:** optimize query for faster load ([70cb461](https://github.com/mbhandari-bh/demo-cc-action/commit/70cb4614d8eda98aaba7ad277ab2b20c8f1a62ca))
+
 # [1.1.0](https://github.com/mbhandari-bh/demo-cc-action/compare/v1.0.0...v1.1.0) (2025-08-25)
 
 
