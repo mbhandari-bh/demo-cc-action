@@ -1,18 +1,48 @@
-name: Release
+name: Changelog
 
 on:
   push:
     branches: [main]
 
 jobs:
-  release:
+  changelog:
+    name: Generate Changelog
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          node-version: '20'
-      - run: npm ci
-      - run: npx semantic-release
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+
+      - name: Install Semantic Release & Plugins
+        run: |
+          npm install -g \
+            semantic-release \
+            conventional-changelog-conventionalcommits \
+            @semantic-release/changelog \
+            @semantic-release/git
+
+      - name: Generate Changelog
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          # Run semantic-release in dry-run mode to generate CHANGELOG
+          semantic-release --branches main --ci false
+
+      - name: Commit CHANGELOG
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog [skip ci]" || echo "No changes to commit"
+          git push origin main
