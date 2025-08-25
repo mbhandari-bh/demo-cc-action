@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/mbhandari-bh/demo-cc-action/compare/v1.0.0...v1.1.0) (2025-08-25)
+
+
+### Features
+
+* **123:** added release changelog generator ([e6b2fda](https://github.com/mbhandari-bh/demo-cc-action/commit/e6b2fdae2995411a79707f069e55b7411713c012))
+
 # 1.0.0 (2025-08-25)
 
 
