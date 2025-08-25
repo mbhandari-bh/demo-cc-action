@@ -25,8 +25,9 @@ jobs:
           ls -al
           cat commitlint.config.js
 
-      - name: Validate commit messages
+      - name: Validate latest commit only
         run: |
-          LAST_COMMIT=$(git rev-parse HEAD)
-          echo "Linting last commit: $LAST_COMMIT"
+          LAST_COMMIT=$(git log -1 --pretty=format:%H)
+          echo "Linting only the latest commit: $LAST_COMMIT"
           npx commitlint --from=$LAST_COMMIT~1 --to=$LAST_COMMIT --verbose
+    
