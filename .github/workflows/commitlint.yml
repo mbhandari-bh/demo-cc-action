@@ -38,4 +38,3 @@ jobs:
               npx commitlint --from=$commit~1 --to=$commit --verbose
             done
           fi
-

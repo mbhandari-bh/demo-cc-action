@@ -1,3 +1,6 @@
 module.exports = {
-  extends: ['@commitlint/config-conventional'],
+  ignores: [(message) => /^Merge\b/.test(message)],
+  rules: {
+    'subject-case': [2, 'always', ['lower-case', 'sentence-case']],
+  },
 };
