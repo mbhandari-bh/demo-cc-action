@@ -1,12 +1,12 @@
-name: Changelog
+name: Changelog & Version Bump
 
 on:
   push:
     branches: [main]
 
 jobs:
-  changelog:
-    name: Generate Changelog
+  release:
+    name: Semantic Version & Changelog
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -30,19 +30,19 @@ jobs:
             @semantic-release/changelog \
             @semantic-release/git
 
-      - name: Generate Changelog
+      - name: Generate Changelog & Bump Version
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Run semantic-release in dry-run mode to generate CHANGELOG
-          semantic-release --branches main --ci false
+          # Run semantic-release (automatic version bump + changelog)
+          npx semantic-release
 
-      - name: Commit CHANGELOG
+      - name: Commit changes if any
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add CHANGELOG.md
-          git commit -m "chore(release): update changelog [skip ci]" || echo "No changes to commit"
+          git add package.json CHANGELOG.md
+          git commit -m "chore(release): bump version & update changelog [skip ci]" || echo "No changes to commit"
           git push origin main
