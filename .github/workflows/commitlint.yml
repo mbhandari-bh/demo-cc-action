@@ -29,5 +29,14 @@ jobs:
       - name: Validate commit messages
         run: |
           BASE=$(git merge-base origin/main HEAD)
-          echo "Linting commits from $BASE to HEAD"
-          npx commitlint --from=$BASE --to=HEAD --verbose
+          echo "Linting commits from $BASE to HEAD (excluding merge commits)"
+          # get all commits excluding merge commits
+          COMMITS=$(git log $BASE..HEAD --no-merges --pretty=format:%H)
+          if [ -z "$COMMITS" ]; then
+            echo "No non-merge commits to lint."
+          else
+            for commit in $COMMITS; do
+              npx commitlint --from=$commit~1 --to=$commit --verbose
+            done
+          fi
+
