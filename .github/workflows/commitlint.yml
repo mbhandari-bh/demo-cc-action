@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # needed to fetch all commits in the PR
+          fetch-depth: 0 # needed to fetch full commit history
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -21,5 +21,13 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Show commitlint config
+        run: |
+          ls -al
+          cat commitlint.config.js
+
       - name: Validate commit messages
-        run: npx commitlint --from=origin/main --to=HEAD --verbose
+        run: |
+          BASE=$(git merge-base origin/main HEAD)
+          echo "Linting commits from $BASE to HEAD"
+          npx commitlint --from=$BASE --to=HEAD --verbose
