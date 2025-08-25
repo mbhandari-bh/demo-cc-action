@@ -1,8 +1,7 @@
-// commitlint.config.js
 module.exports = {
-  ignores: [(message) => /^Merge\b/.test(message)],
+  ignores: [(message) => /^Merge\b/.test(message)], // ignore merge commits
   rules: {
-    // ✅ enforce allowed types
+    // enforce valid conventional types
     'type-enum': [
       2,
       'always',
@@ -21,13 +20,13 @@ module.exports = {
       ],
     ],
 
-    // ✅ enforce case style (lowercase or sentence-case)
+    // allow lowercase, sentence-case, and start-case for subject
     'subject-case': [2, 'always', ['lower-case', 'sentence-case', 'start-case']],
 
-    // ✅ ensure subject is not empty
+    // ensure subject is not empty
     'subject-empty': [2, 'never'],
 
-    // ✅ ensure type is not empty
+    // ensure type is not empty
     'type-empty': [2, 'never'],
   },
 };

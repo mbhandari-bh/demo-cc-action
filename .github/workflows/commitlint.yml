@@ -29,5 +29,5 @@ jobs:
         run: |
           LAST_COMMIT=$(git rev-parse HEAD)
           echo "Linting only the latest commit: $LAST_COMMIT"
-          git show -s --format=%B $LAST_COMMIT | npx commitlint --verbose --from=$LAST_COMMIT --to=$LAST_COMMIT
-    
+          # Lint exactly the last commit
+          npx commitlint --from=$LAST_COMMIT^ --to=$LAST_COMMIT --verbose
