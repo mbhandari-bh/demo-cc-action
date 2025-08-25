@@ -1,7 +1,6 @@
-// commitlint.config.js
 module.exports = {
-  ignores: [(message) => message.startsWith('Merge')],
+  ignores: [(message) => /^Merge\b/.test(message)],
   rules: {
-    'subject-case': [2, 'always', 'lower-case'],
+    'subject-case': [2, 'always', ['lower-case', 'sentence-case']],
   },
 };
