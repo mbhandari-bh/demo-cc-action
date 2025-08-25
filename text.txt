@@ -1,1 +1,1 @@
-feat (feature)
+feat!: rewrite authentication module
