@@ -27,7 +27,7 @@ jobs:
 
       - name: Validate latest commit only
         run: |
-          LAST_COMMIT=$(git log -1 --pretty=format:%H)
+          LAST_COMMIT=$(git rev-parse HEAD)
           echo "Linting only the latest commit: $LAST_COMMIT"
-          npx commitlint --from=$LAST_COMMIT~1 --to=$LAST_COMMIT --verbose
+          git show -s --format=%B $LAST_COMMIT | npx commitlint --verbose --from=$LAST_COMMIT --to=$LAST_COMMIT
     
