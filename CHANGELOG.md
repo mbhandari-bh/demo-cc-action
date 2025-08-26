@@ -1,3 +1,19 @@
+# [3.0.0](https://github.com/mbhandari-bh/demo-cc-action/compare/v2.0.0...v3.0.0) (2025-08-26)
+
+
+### Features
+
+* **22488:** add support for UPI payments ([7d6b8c6](https://github.com/mbhandari-bh/demo-cc-action/commit/7d6b8c63d9859390ad465a89706fe3f5e253fa9a)), closes [#22488](https://github.com/mbhandari-bh/demo-cc-action/issues/22488)
+* **payment:** add support for UPI payments ([22a575d](https://github.com/mbhandari-bh/demo-cc-action/commit/22a575db40f6c8c44b5082c44d87172756d06345)), closes [#789](https://github.com/mbhandari-bh/demo-cc-action/issues/789)
+
+
+### BREAKING CHANGES
+
+* **payment:** payment API now requires `method` field
+to specify "card", "netbanking", or "upi".
+* **22488:** payment API now requires `method` field
+to specify "card", "netbanking", or "upi".
+
 # [2.0.0](https://github.com/mbhandari-bh/demo-cc-action/compare/v1.1.1...v2.0.0) (2025-08-26)
 
 
