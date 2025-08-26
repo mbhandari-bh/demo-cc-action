@@ -1,4 +1,5 @@
 module.exports = {
+  extends: ['@commitlint/config-conventional'],
   ignores: [(message) => /^Merge\b/.test(message)], // ignore merge commits
   rules: {
     // enforce valid conventional types
