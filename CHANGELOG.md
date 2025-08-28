@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/mbhandari-bh/demo-cc-action/compare/v3.0.0...v3.1.0) (2025-08-28)
+
+
+### Features
+
+* **22844:** test conventional commit ([7bbbe02](https://github.com/mbhandari-bh/demo-cc-action/commit/7bbbe02c67689c185be2d9217fbfb7e74e59853b))
+
 # [3.0.0](https://github.com/mbhandari-bh/demo-cc-action/compare/v2.0.0...v3.0.0) (2025-08-26)
 
 
