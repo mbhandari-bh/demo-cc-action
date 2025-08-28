@@ -25,9 +25,7 @@ jobs:
           ls -al
           cat commitlint.config.js
 
-      - name: Validate latest commit only
+      - name: Validate all commits in the PR
         run: |
-          LAST_COMMIT=$(git rev-parse HEAD)
-          echo "Linting only the latest commit: $LAST_COMMIT"
-          # Lint exactly the last commit
-          npx commitlint --from=$LAST_COMMIT^ --to=$LAST_COMMIT --verbose
+          echo "Linting all commits in PR from ${{ github.event.pull_request.base.sha }} to ${{ github.event.pull_request.head.sha }}"
+          npx commitlint --from=${{ github.event.pull_request.base.sha }} --to=${{ github.event.pull_request.head.sha }} --verbose
