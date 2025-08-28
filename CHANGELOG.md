@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/mbhandari-bh/demo-cc-action/compare/v3.1.0...v3.1.1) (2025-08-28)
+
+
+### Bug Fixes
+
+* **22844:** corrected commit message ([#4](https://github.com/mbhandari-bh/demo-cc-action/issues/4)) ([c1930ff](https://github.com/mbhandari-bh/demo-cc-action/commit/c1930ff7507bfc27a7f08502183f96a75aae56b4))
+
 # [3.1.0](https://github.com/mbhandari-bh/demo-cc-action/compare/v3.0.0...v3.1.0) (2025-08-28)
 
 
