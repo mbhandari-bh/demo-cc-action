@@ -1,7 +1,9 @@
 name: Validate Commit Messages
 
 on:
-  pull_request: {}
+  pull_request:
+    branches:
+      - main
 
 jobs:
   lint-commits:
