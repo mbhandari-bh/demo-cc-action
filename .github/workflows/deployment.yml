@@ -1,0 +1,227 @@
+name: VoIP_AI_Platform_CI/CD
+
+concurrency:
+  group: voip-cicd-${{ github.ref }}
+  cancel-in-progress: false
+
+on:
+  # ✅ Auto build + deploy to DEV on push
+  push:
+    branches:
+      - workflow_pipeline
+
+  # ✅ Manual promotion + deploy to MAIN
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment to deploy'
+        type: choice
+        options: [dev, main]
+        required: true
+      reason:
+        description: 'Deployment reason'
+        required: false
+      release_tag:
+        description: 'Release tag to deploy (Example format: v1.1.0)'
+        required: true
+
+env:
+  # ✅ DEV
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_ARTIFACT_REPO: ${{ secrets.GCP_ARTIFACT_REPO }}
+
+  # ✅ PROD
+  PROD_GCP_PROJECT_ID: ${{ secrets.PROD_GCP_PROJECT_ID }}
+  PROD_GCP_ARTIFACT_REPO: ${{ secrets.PROD_GCP_ARTIFACT_REPO }}
+
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+
+# ============================================================
+# ✅ 1. BUILD & PUSH → DEV (AUTO + MANUAL DEV)
+# ============================================================
+jobs:
+  build-and-push:
+    name: Build & Push Docker Images (DEV)
+    runs-on: ubuntu-latest
+    environment: main
+
+    # ✅ Runs for:
+    # - Auto push to workflow_pipeline (DEV)
+    # - Manual run with environment=dev or main
+    if: ${{ github.event_name == 'push' || github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'main' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: dashboard
+            path: dashboard
+          - name: pipecat-service
+            path: services/pipecat-service
+          - name: pipecat-flows-service
+            path: services/flows
+          - name: pipecat-flows-api
+            path: services/flows
+          - name: whisker
+            path: services/whisker
+          - name: langgraph-service
+            path: services/langgraph-service
+          - name: agent-builder-service
+            path: services/agent-builder-service
+          - name: eval-service
+            path: services/eval-service
+          - name: settings-service
+            path: services/settings-service
+          - name: transfer-service
+            path: services/transfer-service
+          - name: postgres-api
+            path: services/postgres-api
+          - name: events-service
+            path: services/events-service
+          - name: org-service
+            path: services/org-service
+          - name: mcp-execution-service
+            path: tools/mcp/mcp-execution-service
+          - name: knowledge-base-service
+            path: services/knowledge-base-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          docker system prune -af --volumes
+
+      - name: Authenticate to GCP (DEV)
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Setup GCloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Docker Login to DEV Artifact Registry
+        run: |
+          gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+
+      - name: Set IMAGE_TAG from Release
+        run: |
+          echo "IMAGE_TAG=${{ github.event.inputs.release_tag }}" >> $GITHUB_ENV
+
+      - name: Build & Push ${{ matrix.name }}
+        run: |
+          IMAGE_VERSION=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GCP_ARTIFACT_REPO}/${{ matrix.name }}:${IMAGE_TAG}
+          IMAGE_LATEST=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GCP_ARTIFACT_REPO}/${{ matrix.name }}:latest
+
+          docker build -t $IMAGE_VERSION -t $IMAGE_LATEST ./${{ matrix.path }}
+          docker push $IMAGE_VERSION
+          docker push $IMAGE_LATEST
+
+# ============================================================
+# ✅ 2. AUTO DEPLOY TO DEV VM
+# ============================================================
+  deploy-dev:
+    name: Deploy to DEV VM
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: ${{ github.event_name == 'push' || github.event.inputs.environment == 'main' }}
+    environment: main
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
+      - name: Deploy on DEV VM
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_IP }} "
+            set -e
+            cd ${{ secrets.GCP_DEPLOY_PATH }}
+            docker compose down
+            docker compose pull
+            docker compose up -d --remove-orphans
+          "
+
+# ============================================================
+# ✅ 3. PROMOTE IMAGE → DEV → PROD (MANUAL MAIN ONLY)
+# ============================================================
+  promote-images-to-prod:
+    name: Promote Images (Dev → Prod)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: ${{ github.event.inputs.environment == 'main' }}
+
+    strategy:
+      matrix:
+        include:
+          - name: dashboard
+          - name: pipecat-service
+          - name: pipecat-flows-service
+          - name: pipecat-flows-api
+          - name: whisker
+          - name: langgraph-service
+          - name: agent-builder-service
+          - name: eval-service
+          - name: settings-service
+          - name: transfer-service
+          - name: postgres-api
+          - name: events-service
+          - name: org-service
+          - name: mcp-execution-service
+          - name: knowledge-base-service
+
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Docker Login
+        run: |
+          gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+
+      - name: Set IMAGE_TAG from Manual Input
+        run: |
+          echo "IMAGE_TAG=${{ github.event.inputs.release_tag }}" >> $GITHUB_ENV
+
+      - name: Promote ${{ matrix.name }}
+        run: |
+          DEV_IMAGE=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GCP_ARTIFACT_REPO}/${{ matrix.name }}:${IMAGE_TAG}
+          PROD_IMAGE=${GCP_REGION}-docker.pkg.dev/${PROD_GCP_PROJECT_ID}/${PROD_GCP_ARTIFACT_REPO}/${{ matrix.name }}:${IMAGE_TAG}
+
+          docker pull $DEV_IMAGE
+          docker tag $DEV_IMAGE $PROD_IMAGE
+          docker push $PROD_IMAGE
+
+# ============================================================
+# ✅ 4. DEPLOY TO PROD (MANUAL MAIN ONLY)
+# ============================================================
+  deploy-main:
+    name: Deploy to MAIN VM (PROD)
+    runs-on: ubuntu-latest
+    needs: promote-images-to-prod
+    if: ${{ github.event.inputs.environment == 'main' }}
+    environment: main
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
+      - name: Deploy on PROD VM
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_IP }} "
+            set -e
+            cd ${{ secrets.GCP_DEPLOY_PATH }}
+            docker compose down
+            docker compose pull
+            docker compose up -d --remove-orphans
+          "
